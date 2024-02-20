@@ -1,5 +1,6 @@
 package com.example.product.controllers;
 
+import com.example.product.dtos.ErrorResponseDto;
 import com.example.product.dtos.ProductRequestDto;
 import com.example.product.dtos.ProductResponseDto;
 import com.example.product.dtos.ProductWrapper;
@@ -10,6 +11,7 @@ import com.example.product.services.InvalidProductException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -34,21 +36,19 @@ public class ProductController {
 
     //get a single product with given id
     @GetMapping("/products/{id}")
-    public ResponseEntity<ProductWrapper> getProductWithId(@PathVariable("id") long id)  {
+    public ResponseEntity<ProductWrapper> getProductWithId(@PathVariable("id") long id) throws InvalidProductException {
         //'https://fakestoreapi.com/products/1'
         ResponseEntity<ProductWrapper> response;
-
-        try {
             Product product = productService.getProductById(id);
             ProductWrapper wrapper = new ProductWrapper(product, "Succesfully retrieved the data");
             response = new ResponseEntity<>(wrapper, HttpStatus.OK);
-        } catch (InvalidProductException e) {
-            ProductWrapper wrapper = new ProductWrapper(null, "Succesfully retrieved the data");
-            response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
-        }
         return  response;
+    }
 
+    @ExceptionHandler(InvalidProductException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidProduct(){
+        return new ResponseEntity<>(new ErrorResponseDto("Invalid product Id"), HttpStatus.NOT_FOUND);
     }
 
 
