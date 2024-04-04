@@ -5,6 +5,7 @@ import com.productservice.products.dtos.ProductResponseSelf;
 import com.productservice.products.exceptions.ProductNotPresentException;
 import com.productservice.products.models.Category;
 import com.productservice.products.models.Product;
+import com.productservice.products.repositories.ProductRepository;
 import com.productservice.products.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,19 @@ public class ProductController {
     @Autowired
     IProductService productService;
 
+    @Autowired
+    ProductRepository productRepository;
+
     @GetMapping("/products")
     public List<Product> getAllProducts(){
 
         return productService.getAllProducts();
+    }
+
+    @GetMapping("/products/search")
+    public Product getProductsByName(@RequestParam("name") String name){
+        return productRepository.findByName(name);
+
     }
 
     @GetMapping("/product/{id}")
