@@ -1,7 +1,8 @@
 package com.productservice.products.service;
 
-import com.productservice.products.dtos.ProductRequestDto;
-import com.productservice.products.dtos.ProductResponseDto;
+import com.productservice.products.dtos.ProductRequestDtoFS;
+import com.productservice.products.dtos.ProductResponseDtoFS;
+import com.productservice.products.exceptions.ProductNotPresentException;
 import com.productservice.products.models.Category;
 import com.productservice.products.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,31 +20,37 @@ public class FakestoreProductService implements IProductService{
     RestTemplate restTemplate;
 
     @Override
-    public Product getSingleProduct(Long id) {
+    public Product getSingleProduct(Long id) throws ProductNotPresentException {
 
-        ProductResponseDto response = restTemplate.getForObject(
+        if(id>20 && id<=40){
+            throw new ProductNotPresentException();
+        }
+        if(id>40){
+            throw new ArithmeticException();
+        }
+        ProductResponseDtoFS response = restTemplate.getForObject(
                 "https://fakestoreapi.com/products/" + id,
-                ProductResponseDto.class);
+                ProductResponseDtoFS.class);
 
         return getProductFromResponseDTO(response);
     }
 
     @Override
     public List<Product> getAllProducts() {
-        ProductResponseDto[] products = restTemplate.getForObject(
+        ProductResponseDtoFS[] products = restTemplate.getForObject(
                 "https://fakestoreapi.com/products/",
-                ProductResponseDto[].class);
+                ProductResponseDtoFS[].class);
 
 
         List<Product> output = new ArrayList<>();
-        for(ProductResponseDto productResponseDto: products){
+        for(ProductResponseDtoFS productResponseDto: products){
             output.add(getProductFromResponseDTO(productResponseDto));
         }
 
         return output;
     }
 
-    private Product getProductFromResponseDTO(ProductResponseDto response) {
+    private Product getProductFromResponseDTO(ProductResponseDtoFS response) {
 
         Product product = new Product();
         product.setId(response.getId());
