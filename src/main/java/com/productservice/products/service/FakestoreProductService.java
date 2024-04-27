@@ -1,11 +1,12 @@
 package com.productservice.products.service;
 
-import com.productservice.products.dtos.ProductRequestDtoFS;
 import com.productservice.products.dtos.ProductResponseDtoFS;
 import com.productservice.products.exceptions.ProductNotPresentException;
 import com.productservice.products.models.Category;
 import com.productservice.products.models.Product;
+import com.productservice.products.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,11 +18,21 @@ public class FakestoreProductService implements IProductService{
 
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RedisTemplate<String,Long> redisTemplate;
+
+    @Autowired
+    private ProductRepository productRepository;
+
 
     @Override
     public Product getSingleProduct(Long id) throws ProductNotPresentException {
 
+        if(redisTemplate.opsForHash().hasKey("PRODUCTS", id)){
+            return (Product) redisTemplate.opsForHash().get("PRODUCTS", id);
+        }
         if(id>20 && id<=40){
             throw new ProductNotPresentException();
         }
@@ -32,7 +43,10 @@ public class FakestoreProductService implements IProductService{
                 "https://fakestoreapi.com/products/" + id,
                 ProductResponseDtoFS.class);
 
-        return getProductFromResponseDTO(response);
+        Product product = getProductFromResponseDTO(response);
+
+        redisTemplate.opsForHash().put("PRODUCTS", id, product);
+        return product;
     }
 
     @Override
@@ -49,6 +63,13 @@ public class FakestoreProductService implements IProductService{
 
         return output;
     }
+
+    @Override
+    public Product saveProduct(Product productDto) {
+        Product saved = productRepository.save(productDto);
+        return saved;
+    }
+
 
     private Product getProductFromResponseDTO(ProductResponseDtoFS response) {
 

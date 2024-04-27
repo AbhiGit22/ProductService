@@ -1,5 +1,6 @@
 package com.productservice.products.controllers;
 
+import com.productservice.products.dtos.CreateProductDto;
 import com.productservice.products.dtos.ProductRequestDtoFS;
 import com.productservice.products.dtos.ProductResponseSelf;
 import com.productservice.products.exceptions.ProductNotPresentException;
@@ -91,5 +92,10 @@ public class ProductController {
         return true;
     }
 
+//    @PostMapping("/create")
+//    public CreateProductDto createProduct(CreateProductDto productDto){
+//        CreateProductDto product = productService.createProduct(productDto);
+//        return product;
+//    }
 
 }
